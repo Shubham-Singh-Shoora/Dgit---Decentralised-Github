@@ -1,0 +1,138 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 263 60% 5%;
+    --foreground: 0 0% 98%;
+
+    --card: 263 60% 5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 263 60% 5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 263 30% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 263 30% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 263 30% 15%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 263 30% 20%;
+    --input: 263 30% 20%;
+    --ring: 263 70% 50%;
+    --radius: 0.75rem;
+
+    --highlight: 270 76% 53%;
+    --cta: 299 70% 60%;
+    --cta-hover: 299 80% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  
+  .glass {
+    @apply bg-secondary/30 backdrop-blur-lg border border-white/10 rounded-xl;
+  }
+
+  .purple-gradient {
+    @apply bg-gradient-to-r from-purple-700 to-purple-500 text-foreground;
+  }
+  
+  .purple-glow {
+    text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+  }
+  
+  .glow {
+    @apply transition-all;
+    box-shadow: 0 0 15px 2px rgba(138, 43, 226, 0.5);
+  }
+  
+  .glow:hover {
+    box-shadow: 0 0 25px 5px rgba(138, 43, 226, 0.7);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-cta text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-cta-hover transition-all duration-300 glow;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent text-white font-semibold py-3 px-6 rounded-lg border-2 border-primary hover:bg-primary/20 transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
