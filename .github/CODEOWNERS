@@ -1,0 +1,12 @@
+# Global rule: every file requires at least one of the following to approve
+*                   @shubham-singh-shoora @akr5555
+
+# Backend logic - Motoko
+/src/dgit_backend/  @shubham-singh-shoora 
+
+# Frontend (Vite + TypeScript)
+/src/dgit_frontend/ @akr5555 
+
+
+# Readme and docs
+/README.md          @shubham-singh-shoora
