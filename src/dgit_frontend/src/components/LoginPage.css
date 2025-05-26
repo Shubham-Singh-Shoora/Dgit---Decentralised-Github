@@ -13,10 +13,10 @@
 }
 
 .vertical-line {
-  width: 5px;
+  width: 1.5px;
   height: 100vh;  /* full viewport height */
   background-color: #774ac9;
-  box-shadow: 0 0 20px #774ac9;
+  box-shadow: 0 0 30px #774ac9;
   transition: transform 0.3s ease-in-out;
   transform: scaleY(0);
   transform-origin: center;
@@ -47,7 +47,7 @@
   transition: transform 1s ease;
   z-index: 1;
 
-  background: radial-gradient(ellipse at center right, #302b63 0%, #06050e 70%);
+  background: radial-gradient(ellipse at center right, #302b63 0%, #06050e 80%);
   background-color: #242424;
   position: relative;
   overflow: hidden;
@@ -61,7 +61,7 @@
   transition: transform 1s ease;
   z-index: 1;
 
-    background: radial-gradient(ellipse at center left, #302b63 0%, #06050e 70%);;
+    background: radial-gradient(ellipse at center left, #302b63 0%, #06050e 80%);;
   background-color: #242424;
   position: relative;
   overflow: hidden;
@@ -79,7 +79,7 @@
     linear-gradient(rgba(128, 0, 128, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(128, 0, 128, 0.2) 1px, transparent 1px);
 
-  background-size: 40px 40px;
+  background-size: 37.1px 40px;
   pointer-events: none;
   z-index: 2;
 }

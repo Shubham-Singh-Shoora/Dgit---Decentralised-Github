@@ -1,7 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import "./App.css";
+import React, { useState, useEffect, useRef } from "react";
+import "./LoginPage.css";
 
-const VerticalLine = ({ active }) => {
+type LoginPageProps = {
+  onLogin?: () => void;
+};
+
+const VerticalLine = ({ active } : { active: boolean}) => {
   const lineRef = useRef(null);
 
   useEffect(() => {
@@ -79,4 +83,57 @@ function App() {
   );
 }
 
-export default App;
+
+function LoginPage({ onLogin }: LoginPageProps) {
+  const [animationStarted, setAnimationStarted] = useState(false);
+  const [panelsGone, setPanelsGone] = useState(false);
+  const [showMain, setShowMain] = useState(false);
+
+  useEffect(() => {
+    let slideTimeout, showTimeout;
+    if (animationStarted) {
+      slideTimeout = setTimeout(() => setPanelsGone(true), 1000);
+      showTimeout = setTimeout(() => {
+        setShowMain(true);
+        if (onLogin) onLogin(); // Notify parent after animation
+      }, 2000);
+    }
+    return () => {
+      clearTimeout(slideTimeout);
+      clearTimeout(showTimeout);
+    };
+  }, [animationStarted, onLogin]);
+
+  if (showMain) return null; // Don't render after login
+
+  return (
+    <>
+      <div className="panels-container">
+        <div className={`left-panel ${animationStarted && panelsGone ? "slide-left" : ""}`}>
+          <div className="panel-content" />
+        </div>
+        <div className={`right-panel ${animationStarted && panelsGone ? "slide-right" : ""}`}>
+          <div className="panel-content" />
+        </div>
+
+        <div className="button-container">
+          <VerticalLine active={animationStarted} />
+          {!animationStarted && (
+            <button onClick={() => setAnimationStarted(true)} className="glow-button">
+              <span className="big-d">Login</span>
+              <span className="small-d">
+                <span className="any">To</span>
+                <br />
+                Internet Identity
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default LoginPage;
+export { App as LoginPage, VerticalLine }; // Export both components
+
