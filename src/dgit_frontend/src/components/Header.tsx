@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { GitBranch } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,8 +50,8 @@ const Header = () => {
         </nav>
         
         <div className="flex items-center gap-4">
-          <Button variant="ghost" className="hidden md:inline-flex">
-            Log In
+          <Button variant="ghost" className="hidden md:inline-flex" asChild>
+            <Link to="/login">Log In</Link>
           </Button>
           <Button className="btn-primary">
             Get Early Access
