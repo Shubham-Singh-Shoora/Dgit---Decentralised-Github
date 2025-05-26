@@ -1,0 +1,201 @@
+/* Full viewport container, center content */
+.line-wrapper {
+  position: fixed; /* fixed to viewport */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center; /* horizontal center */
+  align-items: center;     /* vertical center */
+  pointer-events: none;    /* optional: allow clicks through */
+}
+
+.vertical-line {
+  width: 5px;
+  height: 100vh;  /* full viewport height */
+  background-color: #774ac9;
+  box-shadow: 0 0 20px #774ac9;
+  transition: transform 0.3s ease-in-out;
+  transform: scaleY(0);
+  transform-origin: center;
+  margin: 0;
+}
+
+.vertical-line.expand {
+  transform: scaleY(1);
+}
+
+/* Container for both panels */
+.panels-container {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  z-index: 9;
+  overflow: hidden;
+  background-color: black;
+}
+
+.left-panel{
+  width: 50vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  transition: transform 1s ease;
+  z-index: 1;
+
+  background: radial-gradient(ellipse at center right, #302b63 0%, #06050e 70%);
+  background-color: #242424;
+  position: relative;
+  overflow: hidden;
+}
+
+.right-panel {
+  width: 50vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  transition: transform 1s ease;
+  z-index: 1;
+
+    background: radial-gradient(ellipse at center left, #302b63 0%, #06050e 70%);;
+  background-color: #242424;
+  position: relative;
+  overflow: hidden;
+}
+
+.left-panel::before,
+.right-panel::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+
+  background-image:
+    linear-gradient(rgba(128, 0, 128, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(128, 0, 128, 0.2) 1px, transparent 1px);
+
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Left panel on left */
+.left-panel {
+  left: 0;
+}
+
+/* Right panel on right */
+.right-panel {
+  right: 0;
+}
+
+/* Slide animations for panels */
+.slide-left {
+  transform: translateX(-100%);
+}
+
+.slide-right {
+  transform: translateX(100%);
+}
+
+/* Panel content */
+.panel-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Main content */
+.main-content {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  z-index: 10;
+}
+
+/* Button container, centered */
+.button-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+}
+
+.button-container button {
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  border: none;
+  background-color: #6f42c1;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.button-container button:hover {
+  background-color: #6f42c1;
+}
+
+.glow-button {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background-color: #6f42c1; 
+  color: white;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  border: none;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 1.3rem;
+  box-shadow: 0 0 10px #9b59b6;
+  animation: glowPulsePurple 2s infinite ease-in-out;
+  user-select: none;
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+}
+
+.big-d{
+  padding-bottom: 2px;
+}
+
+.small-d{
+  padding: 10px;
+  font-size: 1.3rem;
+}
+
+.glow-button .big-d {
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  margin-bottom: 0.1em;
+  color: white;
+}
+
+@keyframes glowPulsePurple {
+  0%, 100% {
+    box-shadow: 0 0 10px #9b59b6, 0 0 20px #9b59b6, 0 0 30px #8e44ad;
+  }
+  50% {
+    box-shadow: 0 0 20px #8e44ad, 0 0 30px #9b59b6, 0 0 40px #a29bfe;
+  }
+}
