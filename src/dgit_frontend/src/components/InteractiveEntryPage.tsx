@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { GitBranch, Infinity } from "lucide-react";
+import { AuthClient } from "@dfinity/auth-client";
+
 
 const InteractiveEntryPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,15 +40,34 @@ const InteractiveEntryPage = () => {
     }
   }, []);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setIsLoading(true);
     
-    // Simulate the process and then set the flag
-    setTimeout(() => {
-      localStorage.setItem('hasVisitedLandingPage', 'true');
-      // This will trigger a re-render in the parent component
-      window.dispatchEvent(new CustomEvent('entryPageComplete'));
-    }, 2000);
+    const authClient = await AuthClient.create();
+    const iiCanisterId = import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID;
+    const identityProvider = iiCanisterId
+    ? `http://localhost:4943/?canisterId=${iiCanisterId}`
+    : "https://identity.ic0.app/#authorize";  // fallback for production
+
+    await authClient.login({
+    identityProvider,
+    onSuccess: async () => {
+      // Once logged in, get the identity and its principal
+      const identity = authClient.getIdentity();
+      const principal = identity.getPrincipal().toText();
+      console.log("Logged in with Principal:", principal);
+
+      // You can now pass this identity to your backend or update your app state
+      // For example, you might trigger a re-render or send the principal to your backend:
+      window.dispatchEvent(new CustomEvent("entryPageComplete", { detail: { principal } }));
+
+      setIsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Authentication failed", error);
+      setIsLoading(false);
+    },
+  });
   };
 
   return (
