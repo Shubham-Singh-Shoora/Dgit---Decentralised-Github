@@ -1,71 +1,39 @@
-import Map "mo:base/HashMap";
-import Text "mo:base/Text";
-import Blob "mo:base/Blob";
-import Char "mo:base/Char";
-import Iter "mo:base/Iter";
-import Nat32 "mo:base/Nat32";
+import id "../utils/id";
+import time "../utils/time";
 
-actor {
-    public type BlobId = Text;
-    public type Content = Blob;
+module {
+  // Blob data structure, similar to a Git blob.
+  public type Blob = {
+    id : id.Id;
+    createdAt : time.Timestamp;
+    content : BlobContent;
+  };
 
-    public type BlobData = {
-        id: BlobId;
-        content: Content;
-        size: Nat;
-        hash: Text;
-    };
+  public type BlobContent = [Nat8]; // Raw file content as bytes
 
-    stable var stableEntries : [(BlobId, BlobData)] = [];
+  // Create a new blob from file content
+  public func createBlob(content : BlobContent) : Blob {
+    let blobId = id.generateId(content);
+    let now = time.now();
+    {
+      id = blobId;
+      createdAt = now;
+      content = content;
+    }
+  };
 
-    var store = Map.HashMap<BlobId, BlobData>(32, Text.equal, Text.hash);
+  // Get blob id
+  public func getBlobId(blob : Blob) : id.Id {
+    blob.id
+  };
 
+  // Get blob creation time
+  public func getBlobTime(blob : Blob) : time.Timestamp {
+    blob.createdAt
+  };
 
-    public func put(id: BlobId, content: Content) : async BlobData {
-        let blobData : BlobData = {
-            id = id;
-            content = content;
-            size = content.size();
-            hash = generateHash(content);
-        };
-        store.put(id, blobData);
-        return blobData;
-    };
-
-    public func get(id: BlobId) : async ?BlobData {
-        return store.get(id);
-    };
-
-    public func exists(id: BlobId) : async Bool {
-        return switch (store.get(id)) {
-            case (?_) true;
-            case null false;
-        };
-    };
-
-    public func delete(id: BlobId) : async Bool {
-        return switch (store.remove(id)) {
-            case (?_) true;
-            case null false;
-        };
-    };
-
-    system func preupgrade() {
-        stableEntries := Iter.toArray(store.entries());
-    };
-
-    system func postupgrade() {
-        store := Map.fromIter<BlobId, BlobData>(
-            stableEntries.vals(),
-            32,
-            Text.equal,
-            Text.hash
-        );
-        stableEntries := [];
-    };
-
-
-    private func generateHash(content: Content) : Text {
-        Text.fromChar(Char.fromNat32(Nat32.fromNat(content.size() % 256)))
-    };
+  // Get blob content
+  public func getBlobContent(blob : Blob) : BlobContent {
+    blob.content
+  };
 }

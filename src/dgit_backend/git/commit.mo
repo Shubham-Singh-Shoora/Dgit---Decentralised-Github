@@ -1,117 +1,79 @@
-import Map "mo:base/HashMap";
-import Text "mo:base/Text";
-import Time "mo:base/Time";
+import id "../utils/id";
+import time "../utils/time";
+import types "./types";
 import Array "mo:base/Array";
-import Char "mo:base/Char";
-import Iter "mo:base/Iter";
-import Nat32 "mo:base/Nat32";
 
-actor {
-    public type CommitId = Text;
-    public type TreeId = Text;
+module {
+  // Commit data structure, similar to a Git commit object.
+  public type Commit = {
+    id : id.Id;
+    createdAt : time.Timestamp;
+    tree : id.Id; // The tree this commit points to (root directory snapshot)
+    parents : [id.Id]; // Parent commit IDs (empty for first commit)
+    author : types.Author;
+    message : Text;
+  };
 
-    public type AuthorInfo = {
-        name: Text;
-        email: Text;
-        timestamp: Int;
+  // Create a new commit
+  public func createCommit(tree : id.Id, parents : [id.Id], author : types.Author, message : Text) : Commit {
+    // First, convert text to IDs
+    let messageId = id.textToId(message);
+    let nameId = id.textToId(author.name);
+    let emailId = id.textToId(author.email);
+
+    // Create separate arrays and then concatenate the byte arrays
+    let treeBytes = id.concatIds([tree]);
+    let parentBytes = id.concatIds(parents);
+    let messageBytes = id.concatIds([messageId]);
+    let authorBytes = id.concatIds([nameId, emailId]);
+
+    // Combine all bytes for the final content
+    let allIdsBytes = Array.append(
+      Array.append(treeBytes, parentBytes),
+      Array.append(messageBytes, authorBytes),
+    );
+
+    // Generate commit ID
+    let commitId = id.generateId(allIdsBytes);
+    let now = time.now();
+
+    {
+      id = commitId;
+      createdAt = now;
+      tree = tree;
+      parents = parents;
+      author = author;
+      message = message;
     };
+  };
 
-    public type CommitData = {
-        id: CommitId;
-        treeId: TreeId;
-        parents: [CommitId];
-        author: AuthorInfo;
-        committer: AuthorInfo;
-        message: Text;
-        hash: Text;
-    };
+  // Get commit id
+  public func getCommitId(commit : Commit) : id.Id {
+    commit.id;
+  };
 
-    stable var stableEntries : [(CommitId, CommitData)] = [];
+  // Get commit creation time
+  public func getCommitTime(commit : Commit) : time.Timestamp {
+    commit.createdAt;
+  };
 
-    var store = Map.HashMap<CommitId, CommitData>(32, Text.equal, Text.hash);
+  // Get commit's tree id
+  public func getCommitTree(commit : Commit) : id.Id {
+    commit.tree;
+  };
 
+  // Get commit's parent ids
+  public func getCommitParents(commit : Commit) : [id.Id] {
+    commit.parents;
+  };
 
-    public func put(
-        id: CommitId,
-        treeId: TreeId,
-        parents: [CommitId],
-        author: AuthorInfo,
-        committer: AuthorInfo,
-        message: Text
-    ) : async CommitData {
-        let commitData = {
-            id = id;
-            treeId = treeId;
-            parents = parents;
-            author = author;
-            committer = committer;
-            message = message;
-            hash = generateCommitHash(id, treeId, message);
-        };
-        store.put(id, commitData);
-        return commitData;
-    };
+  // Get commit's author
+  public func getCommitAuthor(commit : Commit) : types.Author {
+    commit.author;
+  };
 
-    public func get(id: CommitId) : async ?CommitData {
-        return store.get(id);
-    };
-
-    public func getParents(id: CommitId) : async ?[CommitId] {
-        return switch (store.get(id)) {
-            case (?commit) ?commit.parents;
-            case null null;
-        };
-    };
-
-    public func getHistory(id: CommitId, limit: Nat) : async [CommitData] {
-        var history : [CommitData] = [];
-        var current = ?id;
-        var count = 0;
-
-        while (current != null and count < limit) {
-            switch (current) {
-                case (?commitId) {
-                    switch (store.get(commitId)) {
-                        case (?commit) {
-                            history := Array.append(history, [commit]);
-                            current := if (commit.parents.size() > 0) ?commit.parents[0] else null;
-                            count += 1;
-                        };
-                        case null current := null;
-                    }
-                };
-                case null {};
-            }
-        };
-        return history;
-    };
-
-    public func createAuthor(name: Text, email: Text) : async AuthorInfo {
-        return {
-            name = name;
-            email = email;
-            timestamp = Time.now();
-        };
-    };
-
-
-    system func preupgrade() {
-        stableEntries := Iter.toArray(store.entries());
-    };
-
-    system func postupgrade() {
-        store := Map.fromIter<CommitId, CommitData>(
-            stableEntries.vals(),
-            32,
-            Text.equal,
-            Text.hash
-        );
-        stableEntries := [];
-    };
-
-
-    private func generateCommitHash(id: CommitId, treeId: TreeId, message: Text) : Text {
-        let combined = id # treeId # message;
-        Text.fromChar(Char.fromNat32(Nat32.fromNat(combined.size() % 256)))
-    };
-}
+  // Get commit's message
+  public func getCommitMessage(commit : Commit) : Text {
+    commit.message;
+  };
+};

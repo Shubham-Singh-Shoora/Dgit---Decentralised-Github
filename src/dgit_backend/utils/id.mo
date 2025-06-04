@@ -1,13 +1,49 @@
-import Time "mo:base/Time";
-import Nat "mo:base/Nat";
-import Nat64 "mo:base/Nat64";
+import Nat32 "mo:base/Nat32";
+import Nat8 "mo:base/Nat8";
+import Text "mo:base/Text";
+import Blob "mo:base/Blob";
+import Array "mo:base/Array";
 
-object {
-  private var counter : Nat = 0;
+module {
+  public type Id = Nat32;
 
-  public func nextId(prefix : Text) : Text {
-    counter += 1;
-    let time = Nat64.toNat(Nat64.fromIntWrap(Time.now()));
-    prefix # "-" # Nat.toText(time) # "-" # Nat.toText(counter)
-  }
-}
+  // Simple all-bits hash function for a byte array
+  public func generateId(data : [Nat8]) : Id {
+    var hash : Nat32 = 2166136261; // FNV offset basis
+    for (b in data.vals()) {
+      hash := Nat32.bitxor(hash, Nat32.fromNat(Nat8.toNat(b)));
+      hash := Nat32.mul(hash, 16777619); // FNV prime
+    };
+    hash;
+  };
+
+  // Convert Text to [Nat8] for id generation
+  public func textToId(txt : Text) : Nat32 {
+    generateId(Blob.toArray(Text.encodeUtf8(txt)));
+  };
+
+  // Concatenate multiple Ids into a [Nat8] list for hashing
+  public func concatIds(ids : [Id]) : [Nat8] {
+    var result : [Nat8] = [];
+    for (i in ids.vals()) {
+      // Create a new array with the 4 bytes from this ID
+      let bytes : [Nat8] = [
+        Nat8.fromNat(Nat32.toNat((i >> 24) & 0xFF)),
+        Nat8.fromNat(Nat32.toNat((i >> 16) & 0xFF)),
+        Nat8.fromNat(Nat32.toNat((i >> 8) & 0xFF)),
+        Nat8.fromNat(Nat32.toNat(i & 0xFF)),
+      ];
+
+      // Use Array.append instead of # operator
+      for (byte in bytes.vals()) {
+        result := Array.tabulate<Nat8>(
+          result.size() + 1,
+          func(i) {
+            if (i < result.size()) { result[i] } else { byte };
+          },
+        );
+      };
+    };
+    result;
+  };
+};

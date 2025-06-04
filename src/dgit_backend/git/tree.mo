@@ -1,100 +1,49 @@
-import Map "mo:base/HashMap";
-import Text "mo:base/Text";
+import id "../utils/id";
+import time "../utils/time";
+import types "./types";
 import Array "mo:base/Array";
-import Iter "mo:base/Iter";
-import Char "mo:base/Char";
-import Nat32 "mo:base/Nat32";
 
-actor {
-    public type TreeId = Text;
-    public type BlobId = Text;
-    public type Path = Text;
+module {
+  // TreeEntry represents a file or subdirectory in the tree
+  public type TreeEntry = {
+    name : Text;
+    kind : types.EntryKind; // Blob or Tree
+    id : id.Id; // Blob or sub-tree id
+    mode : Nat32; // Permissions/mode, e.g. 0o100644 for file
+  };
 
-    public type TreeEntry = {
-        #file : { path : Path; blobId : BlobId };
-        #directory : { path : Path; treeId : TreeId };
+  // Tree data structure, similar to a Git tree object
+  public type Tree = {
+    id : id.Id;
+    createdAt : time.Timestamp;
+    entries : [TreeEntry];
+  };
+
+  // Create a new tree from entries
+  public func createTree(entries : [TreeEntry]) : Tree {
+    let entryIds = Array.map<TreeEntry, id.Id>(entries, func(e) { e.id });
+    let content : [Nat8] = id.concatIds(entryIds);
+    let treeId = id.generateId(content);
+    let now = time.now();
+    {
+      id = treeId;
+      createdAt = now;
+      entries = entries;
     };
+  };
 
-    public type TreeData = {
-        id : TreeId;
-        entries : [TreeEntry];
-        hash : Text;
-    };
+  // Get tree id
+  public func getTreeId(tree : Tree) : id.Id {
+    tree.id;
+  };
 
-    stable var entries : [(TreeId, TreeData)] = [];
+  // Get tree creation time
+  public func getTreeTime(tree : Tree) : time.Timestamp {
+    tree.createdAt;
+  };
 
-    var store = Map.fromIter<TreeId, TreeData>(
-        entries.vals(),
-        32,
-        Text.equal,
-        Text.hash,
-    );
-
-    public func put(id : TreeId, treeEntries : [TreeEntry]) : async TreeData {
-        let treeData = {
-            id = id;
-            entries = treeEntries;
-            hash = generateTreeHash(treeEntries);
-        };
-        store.put(id, treeData);
-        return treeData;
-    };
-
-    public query func get(id : TreeId) : async ?TreeData {
-        store.get(id);
-    };
-
-    public query func getEntry(treeId : TreeId, path : Path) : async ?TreeEntry {
-        switch (store.get(treeId)) {
-            case (?tree) {
-                Array.find<TreeEntry>(
-                    tree.entries,
-                    func(entry) {
-                        switch (entry) {
-                            case (#file(f)) f.path == path;
-                            case (#directory(d)) d.path == path;
-                        };
-                    },
-                );
-            };
-            case null null;
-        };
-    };
-
-    public func addEntry(treeId : TreeId, entry : TreeEntry) : async ?TreeData {
-        switch (store.get(treeId)) {
-            case (?tree) {
-                let newEntries = Array.append(tree.entries, [entry]);
-                let updated = await put(treeId, newEntries);
-                return ?updated;
-            };
-            case null return null;
-        };
-    };
-
-    public query func listEntries(treeId : TreeId) : async ?[TreeEntry] {
-        switch (store.get(treeId)) {
-            case (?tree) ?tree.entries;
-            case null null;
-        };
-    };
-
-    private func generateTreeHash(treeEntries : [TreeEntry]) : Text {
-
-        Text.fromChar(Char.fromNat32(Nat32.fromNat(treeEntries.size() % 256)));
-    };
-
-    system func preupgrade() {
-        entries := Iter.toArray(store.entries());
-    };
-
-    system func postupgrade() {
-        store := Map.fromIter<TreeId, TreeData>(
-            entries.vals(),
-            32,
-            Text.equal,
-            Text.hash,
-        );
-        entries := [];
-    };
+  // Get tree entries
+  public func getTreeEntries(tree : Tree) : [TreeEntry] {
+    tree.entries;
+  };
 };
