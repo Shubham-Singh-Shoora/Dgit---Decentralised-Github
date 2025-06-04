@@ -1,49 +1,21 @@
-import Map "mo:base/HashMap";
-import Iter "mo:base/Iter";
-import Text "mo:base/Text";
+import Array "mo:base/Array";
+import blob "./blob";
+import commit "./commit";
+import tree "./tree";
+import ref "./ref";
+import id "../utils/id";
 
-import Types "types"; 
-
-actor {
-
-    public type RepoId = Text;
-    public type RepoMeta = Types.RepoMeta;
-
-    stable var stableRepos : [(RepoId, RepoMeta)] = [];
-
-    var repoStore = Map.fromIter<RepoId, RepoMeta>(
-        stableRepos.vals(), 32, Text.equal, Text.hash
-    );
-
-    public func createRepo(id: RepoId, meta: RepoMeta) : async Bool {
-        if (repoStore.get(id) != null) return false;
-        repoStore.put(id, meta);
-        return true;
-    };
-
-    public func getRepo(id: RepoId) : async ?RepoMeta {
-        return repoStore.get(id);
-    };
-
-    public func listRepos() : async [RepoMeta] {
-        return Iter.toArray(repoStore.vals());
-    };
-
-    public func deleteRepo(id: RepoId) : async Bool {
-        return switch (repoStore.remove(id)) {
-            case (?_) true;
-            case null false;
-        };
-    };
-
-    system func preupgrade() {
-        stableRepos := Iter.toArray(repoStore.entries());
-    };
-
-    system func postupgrade() {
-        repoStore := Map.fromIter<RepoId, RepoMeta>(
-            stableRepos.vals(), 32, Text.equal, Text.hash
-        );
-        stableRepos := [];
-    };
-}
+module {
+  public func findBlob(blobs : [blob.Blob], searchId : id.Id) : ?blob.Blob {
+    Array.find<blob.Blob>(blobs, func(b) { b.id == searchId });
+  };
+  public func findCommit(commits : [commit.Commit], searchId : id.Id) : ?commit.Commit {
+    Array.find<commit.Commit>(commits, func(c) { c.id == searchId });
+  };
+  public func findTree(trees : [tree.Tree], searchId : id.Id) : ?tree.Tree {
+    Array.find<tree.Tree>(trees, func(t) { t.id == searchId });
+  };
+  public func findRef(refs : [ref.Ref], name : Text) : ?ref.Ref {
+    Array.find<ref.Ref>(refs, func(r) { r.name == name });
+  };
+};

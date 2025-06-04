@@ -1,117 +1,57 @@
-import Map "mo:base/HashMap";
-import Text "mo:base/Text";
-import Iter "mo:base/Iter";
+import id "../utils/id";
+import time "../utils/time";
 
-actor {
-    public type RefName = Text;
-    public type CommitId = Text;
+module {
+  // Ref data structure, similar to a Git reference (branch, tag, etc.)
+  public type Ref = {
+    id : id.Id;
+    createdAt : time.Timestamp;
+    name : Text; // Name of the reference (e.g., "refs/heads/main", "refs/tags/v1.0")
+    target : id.Id; // The commit (or object) this ref points to
+    refType : RefType; // Branch, Tag, or Other
+  };
 
-    public type RefType = {
-        #branch;
-        #tag;
-        #head;
+  public type RefType = {
+    #Branch;
+    #Tag;
+    #Other;
+  };
+
+  public func createRef(name : Text, target : id.Id, refType : RefType) : Ref {
+    // Prepare as [Nat32]
+    let nameId : id.Id = id.textToId(name);
+    let refTypeId : id.Id = id.textToId(debug_show refType);
+    let allIds : [id.Id] = [nameId, target, refTypeId];
+    let content : [Nat8] = id.concatIds(allIds);
+    let refId = id.generateId(content);
+    let now = time.now();
+    {
+      id = refId;
+      createdAt = now;
+      name = name;
+      target = target;
+      refType = refType;
     };
+  };
 
-    public type RefData = {
-        name: RefName;
-        target: CommitId;
-        refType: RefType;
-        protected: Bool;
-    };
+  // Getters
+  public func getRefId(ref : Ref) : id.Id {
+    ref.id;
+  };
 
-    stable var stableEntries: [(RefName, RefData)] = [];
+  public func getRefTime(ref : Ref) : time.Timestamp {
+    ref.createdAt;
+  };
 
-    var store = Map.fromIter<RefName, RefData>(
-        stableEntries.vals(), 32, Text.equal, Text.hash
-    );
+  public func getRefName(ref : Ref) : Text {
+    ref.name;
+  };
 
-    public func put(
-        name: RefName,
-        target: CommitId,
-        refType: RefType,
-        protected: Bool
-    ) : async RefData {
-        let refData = {
-            name = name;
-            target = target;
-            refType = refType;
-            protected = protected;
-        };
-        store.put(name, refData);
-        return refData;
-    };
+  public func getRefTarget(ref : Ref) : id.Id {
+    ref.target;
+  };
 
-    public func get(name: RefName) : async ?RefData {
-        return store.get(name);
-    };
-
-    public func updateTarget(name: RefName, newTarget: CommitId) : async ?RefData {
-        switch (store.get(name)) {
-            case (?ref) {
-                if (not ref.protected) {
-                    let updated = {
-                        name = ref.name;
-                        target = newTarget;
-                        refType = ref.refType;
-                        protected = ref.protected;
-                    };
-                    store.put(name, updated);
-                    return ?updated;
-                } else return null;
-            };
-            case null return null;
-        }
-    };
-
-    public func delete(name: RefName) : async Bool {
-        switch (store.get(name)) {
-            case (?ref) {
-                if (not ref.protected) {
-                    ignore store.remove(name);
-                    return true;
-                } else return false;
-            };
-            case null return false;
-        }
-    };
-
-    public func listByType(refType: RefType) : async [RefData] {
-        return store.vals()
-            |> Iter.filter(_, func(ref: RefData) : Bool { ref.refType == refType })
-            |> Iter.toArray(_);
-    };
-
-    public func listAll() : async [RefData] {
-        return store.vals() |> Iter.toArray(_);
-    };
-
-    public func createBranch(name: RefName, target: CommitId) : async RefData {
-        return await put(name, target, #branch, false);
-    };
-
-    public func createTag(name: RefName, target: CommitId) : async RefData {
-        return await put(name, target, #tag, true);
-    };
-
-    public func setHead(target: CommitId) : async RefData {
-        return await put("HEAD", target, #head, false);
-    };
-
-    public func getHead() : async ?CommitId {
-        switch (store.get("HEAD")) {
-            case (?ref) return ?ref.target;
-            case null return null;
-        }
-    };
-
-    system func preupgrade() {
-        stableEntries := Iter.toArray(store.entries());
-    };
-
-    system func postupgrade() {
-        store := Map.fromIter<RefName, RefData>(
-            stableEntries.vals(), 32, Text.equal, Text.hash
-        );
-        stableEntries := [];
-    };
-}
+  public func getRefType(ref : Ref) : RefType {
+    ref.refType;
+  };
+};
