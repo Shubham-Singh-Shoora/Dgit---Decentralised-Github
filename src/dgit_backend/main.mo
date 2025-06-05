@@ -10,6 +10,7 @@ import Nat32 "mo:base/Nat32";
 import id "./utils/id";
 import Storage "./git/storage";
 import Text "mo:base/Text";
+import CBOR "./cbor/cbor"; // <<--- Ensure you have CBOR helpers
 
 actor Main {
 
@@ -18,12 +19,11 @@ actor Main {
   stable var owner : Principal = Principal.fromText("aaaaa-aa");
   stable var collaborators : [Principal] = [];
 
-  // ------------------ Git Data Structures ------------------
-
-  var blobs : [BlobModule.Blob] = [];
-  var commits : [CommitModule.Commit] = [];
-  var trees : [TreeModule.Tree] = [];
-  var refs : [RefModule.Ref] = [];
+  // ------------------ Git Data Structures (CBOR storage) ------------------
+  stable var blobsCBOR : [[Nat8]] = [];
+  stable var commitsCBOR : [[Nat8]] = [];
+  stable var treesCBOR : [[Nat8]] = [];
+  stable var refsCBOR : [[Nat8]] = [];
   let storage = Storage.Storage();
 
   // ------------------ HEAD Management ------------------
@@ -41,7 +41,6 @@ actor Main {
     let repoId = id.textToId(name);
     repoName := name;
     owner := caller;
-
     return "Repository initialized with ID: " # Nat32.toText(repoId);
   };
 
@@ -61,7 +60,7 @@ actor Main {
   };
 
   public func setHEAD(name : Text) : async Text {
-    switch (Array.find<RefModule.Ref>(refs, func(r) { r.name == name })) {
+    switch (await getRef(name)) {
       case (?ref) {
         headRef := ref.name;
         headCommitId := ref.target;
@@ -74,117 +73,117 @@ actor Main {
   };
 
   // ----- Blob functions -----
-  public shared ({ caller }) func addBlob(content : [Nat8]) : async BlobModule.Blob {
+  public shared ({ caller }) func addBlob(content : [Nat8]) : async Nat {
     assert isAuthorized(caller);
     let blob = BlobModule.createBlob(content);
-    blobs := Array.append<BlobModule.Blob>(blobs, [blob]); // safer appending
-    blob;
+    let cborBytes = CBOR.encodeBlobObject(blob);
+    blobsCBOR := Array.append<[[Nat8]]>(blobsCBOR, [cborBytes]);
+    blobsCBOR.size() - 1;
   };
 
   public func getBlob(blobId : Nat) : async ?BlobModule.Blob {
-    if (blobId < blobs.size()) {
-      ?blobs[blobId];
+    if (blobId < blobsCBOR.size()) {
+      ?CBOR.decodeBlobObject(blobsCBOR[blobId]);
     } else {
       null;
     };
   };
 
   public func getAllBlobs() : async [BlobModule.Blob] {
-    blobs;
+    Array.map<[[Nat8]], BlobModule.Blob>(blobsCBOR, func(bytes) { CBOR.decodeBlobObject(bytes) });
   };
 
   // ----- Tree functions -----
-  public shared ({ caller }) func addTree(entries : [TreeModule.TreeEntry]) : async TreeModule.Tree {
+  public shared ({ caller }) func addTree(entries : [TreeModule.TreeEntry]) : async Nat {
     assert isAuthorized(caller);
     let tree = TreeModule.createTree(entries);
-    trees := Array.tabulate<TreeModule.Tree>(
-      trees.size() + 1,
-      func(i) {
-        if (i < trees.size()) { trees[i] } else { tree };
-      },
-    );
-    tree;
+    let cborBytes = CBOR.encodeTreeObject(tree);
+    treesCBOR := Array.append<[[Nat8]]>(treesCBOR, [cborBytes]);
+    treesCBOR.size() - 1;
   };
 
   public func getTree(treeId : Nat) : async ?TreeModule.Tree {
-    if (treeId < trees.size()) {
-      ?trees[treeId];
+    if (treeId < treesCBOR.size()) {
+      ?CBOR.decodeTreeObject(treesCBOR[treeId]);
     } else {
       null;
     };
   };
 
   public func getAllTrees() : async [TreeModule.Tree] {
-    trees;
+    Array.map<[[Nat8]], TreeModule.Tree>(treesCBOR, func(bytes) { CBOR.decodeTreeObject(bytes) });
   };
 
   // ----- Commit functions -----
-  public shared ({ caller }) func addCommit(tree : Nat32, parents : [Nat32], author : Types.Author, message : Text) : async CommitModule.Commit {
+  public shared ({ caller }) func addCommit(tree : Nat32, parents : [Nat32], author : Types.Author, message : Text) : async Nat {
     assert isAuthorized(caller);
     let commit = CommitModule.createCommit(tree, parents, author, message);
-    commits := Array.tabulate<CommitModule.Commit>(
-      commits.size() + 1,
-      func(i) {
-        if (i < commits.size()) { commits[i] } else { commit };
-      },
-    );
-    commit;
+    let cborBytes = CBOR.encodeCommitObject(commit);
+    commitsCBOR := Array.append<[[Nat8]]>(commitsCBOR, [cborBytes]);
+    commitsCBOR.size() - 1;
   };
 
   public func getCommit(commitId : Nat) : async ?CommitModule.Commit {
-    if (commitId < commits.size()) {
-      ?commits[commitId];
+    if (commitId < commitsCBOR.size()) {
+      ?CBOR.decodeCommitObject(commitsCBOR[commitId]);
     } else {
       null;
     };
   };
 
   public func getAllCommits() : async [CommitModule.Commit] {
-    commits;
+    Array.map<[[Nat8]], CommitModule.Commit>(commitsCBOR, func(bytes) { CBOR.decodeCommitObject(bytes) });
   };
 
   // ------------------ Ref (Branch) Functions ------------------
-  public shared ({ caller }) func addRef(name : Text, target : Nat32, refType : RefModule.RefType) : async RefModule.Ref {
+  public shared ({ caller }) func addRef(name : Text, target : Nat32, refType : RefModule.RefType) : async Nat {
     assert isAuthorized(caller);
     let ref : RefModule.Ref = RefModule.createRef(name, target, refType);
+    let cborBytes = CBOR.encodeRefObject(ref);
     var updated = false;
 
-    if (refs.size() > 0) {
-      refs := Array.tabulate<RefModule.Ref>(
-        refs.size(),
+    if (refsCBOR.size() > 0) {
+      refsCBOR := Array.tabulate<[[Nat8]]>(
+        refsCBOR.size(),
         func(i) {
-          if (refs[i].name == name) {
+          let r = CBOR.decodeRefObject(refsCBOR[i]);
+          if (r.name == name) {
             updated := true;
-            ref;
+            cborBytes;
           } else {
-            refs[i];
+            refsCBOR[i];
           };
         },
       );
     };
 
-    if (refs.size() == 0 or not updated) {
-      let newRefs : [RefModule.Ref] = Array.append<RefModule.Ref>(refs, [ref]);
-      refs := newRefs;
+    if (refsCBOR.size() == 0 or not updated) {
+      refsCBOR := Array.append<[[Nat8]]>(refsCBOR, [cborBytes]);
     };
-    ref;
+    refsCBOR.size() - 1;
   };
 
   public func getRef(name : Text) : async ?RefModule.Ref {
-    let matches = Array.filter<RefModule.Ref>(refs, func(r) { r.name == name });
-    if (matches.size() > 0) { ?matches[0] } else { null };
+    let matches = Array.filter<[[Nat8]]>(
+      refsCBOR,
+      func(bytes) {
+        CBOR.decodeRefObject(bytes).name == name;
+      },
+    );
+    if (matches.size() > 0) { ?CBOR.decodeRefObject(matches[0]) } else { null };
   };
 
   public func getAllRefs() : async [RefModule.Ref] {
-    refs;
+    Array.map<[[Nat8]], RefModule.Ref>(refsCBOR, func(bytes) { CBOR.decodeRefObject(bytes) });
   };
 
   // ------------------ High-level Git API ------------------
   public shared ({ caller }) func createCommit(treeId : Nat32, parentIds : [Nat32], author : Types.Author, message : Text) : async Nat {
     assert isAuthorized(caller);
     let commit = CommitModule.createCommit(treeId, parentIds, author, message);
-    let id = storage.insertCommit(commit);
-    Nat32.toNat(id);
+    let cborBytes = CBOR.encodeCommitObject(commit);
+    commitsCBOR := Array.append<[[Nat8]]>(commitsCBOR, [cborBytes]);
+    commitsCBOR.size() - 1;
   };
 
   public shared ({ caller }) func createBranch(name : Text, commitId : Nat32) : async Text {
@@ -197,18 +196,14 @@ actor Main {
     var visited : [Nat32] = [];
     var result : [CommitModule.Commit] = [];
 
-    // Helper function to check if an ID is in the visited array
     func isVisited(id : Nat32) : Bool {
       Option.isSome(Array.find<Nat32>(visited, func(v) { v == id }));
     };
 
-    // Must use recursion differently for async functions
     func processCommit(id : Nat32) : async () {
       if (isVisited(id)) return;
       visited := Array.append<Nat32>(visited, [id]);
-
       switch (await getCommit(Nat32.toNat(id))) {
-        // Convert Nat32 to Nat for getCommit
         case (?commit) {
           result := Array.append(result, [commit]);
           for (parent in commit.parents.vals()) {
@@ -219,7 +214,6 @@ actor Main {
       };
     };
 
-    // Start the traversal
     await processCommit(commitId);
     result;
   };
@@ -227,7 +221,7 @@ actor Main {
   public func getBranchHistory(branchName : Text) : async [CommitModule.Commit] {
     switch (await getRef(branchName)) {
       case (?ref) {
-        await getCommitHistory(ref.target); // Add await here
+        await getCommitHistory(ref.target);
       };
       case null {
         [];
@@ -237,13 +231,11 @@ actor Main {
 
   public shared ({ caller }) func mergeBranch(sourceBranch : Text, targetBranch : Text, author : Types.Author, message : Text) : async Text {
     assert isAuthorized(caller);
-    // Fetch source and target refs
-    let sourceRef = Array.find<RefModule.Ref>(refs, func(r) { r.name == sourceBranch });
-    let targetRef = Array.find<RefModule.Ref>(refs, func(r) { r.name == targetBranch });
+    let sourceRefOpt = await getRef(sourceBranch);
+    let targetRefOpt = await getRef(targetBranch);
 
-    switch (sourceRef, targetRef) {
+    switch (sourceRefOpt, targetRefOpt) {
       case (?src, ?tgt) {
-        // Get commits
         let sourceCommitId = src.target;
         let targetCommitId = tgt.target;
 
@@ -252,22 +244,17 @@ actor Main {
 
         switch (sourceCommitOpt, targetCommitOpt) {
           case (?srcCommit, ?tgtCommit) {
-            // Naive merge logic: use source commit's tree (could be improved with 3-way merge later)
             let mergeTree = srcCommit.tree;
-
-            // Create merge commit with 2 parents
             let mergeCommit = CommitModule.createCommit(
               mergeTree,
               [sourceCommitId, targetCommitId],
               author,
               message # " (Merged " # sourceBranch # " into " # targetBranch # ")",
             );
-
-            let newId = storage.insertCommit(mergeCommit);
-
-            // Update the target branch to point to this new merge commit
-            ignore addRef(targetBranch, newId, #Branch);
-
+            let cborBytes = CBOR.encodeCommitObject(mergeCommit);
+            commitsCBOR := Array.append<[[Nat8]]>(commitsCBOR, [cborBytes]);
+            let newId = commitsCBOR.size() - 1;
+            ignore addRef(targetBranch, Nat32.fromNat(newId), #Branch);
             return "Merged " # sourceBranch # " into " # targetBranch # " at commit " # debug_show (newId);
           };
           case _ return "Unable to fetch commits from source/target branches.";
@@ -279,24 +266,20 @@ actor Main {
 
   public shared ({ caller }) func forkRepo() : async Text {
     let forkedName = repoName # "-fork";
-
-    // Shallow clone data (for simplicity; not deep copy of objects)
-    let newBlobs = blobs;
-    let newTrees = trees;
-    let newCommits = commits;
-    let newRefs = refs;
+    let newBlobsCBOR = blobsCBOR;
+    let newTreesCBOR = treesCBOR;
+    let newCommitsCBOR = commitsCBOR;
+    let newRefsCBOR = refsCBOR;
     let newHeadRef = headRef;
     let newHeadCommitId = headCommitId;
 
-    // Reset the current repo state for the fork
     repoName := forkedName;
     owner := caller;
     collaborators := [];
-
-    blobs := newBlobs;
-    trees := newTrees;
-    commits := newCommits;
-    refs := newRefs;
+    blobsCBOR := newBlobsCBOR;
+    treesCBOR := newTreesCBOR;
+    commitsCBOR := newCommitsCBOR;
+    refsCBOR := newRefsCBOR;
     headRef := newHeadRef;
     headCommitId := newHeadCommitId;
 
@@ -309,16 +292,16 @@ actor Main {
       return "Cannot delete the currently checked-out branch.";
     };
 
-    let newRefs = Array.filter<RefModule.Ref>(
-      refs,
-      func(ref) { ref.name != name },
+    let newRefsCBOR = Array.filter<[[Nat8]]>(
+      refsCBOR,
+      func(bytes) { CBOR.decodeRefObject(bytes).name != name },
     );
 
-    if (newRefs.size() == refs.size()) {
+    if (newRefsCBOR.size() == refsCBOR.size()) {
       return "Branch not found.";
     };
 
-    refs := newRefs;
+    refsCBOR := newRefsCBOR;
     return "Branch '" # name # "' deleted.";
   };
 
