@@ -3,6 +3,7 @@ import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
 import Blob "mo:base/Blob";
 import Array "mo:base/Array";
+import Debug "mo:base/Debug";
 
 module {
   public type Id = Nat32;
@@ -11,9 +12,10 @@ module {
   public func generateId(data : [Nat8]) : Id {
     var hash : Nat32 = 2166136261; // FNV offset basis
     for (b in data.vals()) {
-      hash := Nat32.bitxor(hash, Nat32.fromNat(Nat8.toNat(b)));
-      hash := Nat32.mul(hash, 16777619); // FNV prime
+      hash := hash ^ Nat32.fromNat(Nat8.toNat(b));
+      hash := hash *% 16777619; // FNV prime with wrap multiplication
     };
+    Debug.print("Final hash: " # Nat32.toText(hash));
     hash;
   };
 
