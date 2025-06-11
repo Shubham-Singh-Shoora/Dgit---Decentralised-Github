@@ -4,6 +4,10 @@
       "main": "src/dgit_backend/main.mo",
       "type": "motoko"
     },
+    "auth_canister": {
+      "main": "src/dgit_backend/auth_canister/main.mo",
+      "type": "motoko"
+    },
     "dgit_frontend": {
       "dependencies": [
         "dgit_backend"

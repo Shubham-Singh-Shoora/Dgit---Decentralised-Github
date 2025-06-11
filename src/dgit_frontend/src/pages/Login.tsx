@@ -1,10 +1,11 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GitBranch, Eye, EyeOff, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { auth_canister } from '../declarations/auth_canister';
+
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,10 +13,26 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { email, password });
+
+    try {
+      const result = await auth_canister.signIn();
+
+      if ('ok' in result) {
+        const user = result.ok;
+        console.log('✅ Logged in as:', user);
+
+        // You can store user state or redirect
+        navigate('/dashboard'); // Replace with your dashboard route
+      } else {
+        console.error('❌ Login failed:', result.err);
+        alert('Login failed: ' + Object.keys(result.err)[0]);
+      }
+    } catch (err) {
+      console.error('🚨 Unexpected error during sign-in:', err);
+      alert('Unexpected error. Check console.');
+    }
   };
 
   const handleClose = () => {
@@ -31,7 +48,7 @@ const Login = () => {
             <GitBranch size={28} className="text-cta" />
             <span className="font-heading text-2xl font-bold purple-glow">Dgit</span>
           </Link>
-          
+
           <nav className="flex items-center gap-4">
             <Link to="/signup" className="text-white/80 hover:text-white transition-colors">
               Sign up
