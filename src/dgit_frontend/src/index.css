@@ -69,6 +69,26 @@
   .glow:hover {
     box-shadow: 0 0 25px 5px rgba(138, 43, 226, 0.7);
   }
+
+  .web3-gradient {
+    @apply bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20;
+  }
+  
+  .card-elevated {
+    @apply bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .card-interactive {
+    @apply card-elevated hover:border-primary/30 hover:bg-card/70 cursor-pointer;
+  }
+  
+  .web3-shadow {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  
+  .web3-shadow-hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
 }
 
 @layer components {
