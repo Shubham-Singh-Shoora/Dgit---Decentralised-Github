@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { GitBranch, Infinity } from "lucide-react";
+import { AuthClient } from "@dfinity/auth-client";
+
 
 const InteractiveEntryPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +18,7 @@ const InteractiveEntryPage = () => {
       const rect = entryRef.current.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
-      
+
       // Send cursor position to iframe for hover effects
       try {
         iframeRef.current.contentWindow?.postMessage({
@@ -38,29 +40,55 @@ const InteractiveEntryPage = () => {
     }
   }, []);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setIsLoading(true);
-    
-    // Simulate the process and then set the flag
-    setTimeout(() => {
-      localStorage.setItem('hasVisitedLandingPage', 'true');
-      // This will trigger a re-render in the parent component
-      window.dispatchEvent(new CustomEvent('entryPageComplete'));
-    }, 2000);
+
+    // Create the authentication client instance
+    const authClient = await AuthClient.create();
+
+    // Determine the identity provider URL. Use your local canister ID when testing locally.
+    const iiCanisterId = import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID;
+    const identityProvider = iiCanisterId
+      ? `http://localhost:4943/?canisterId=${iiCanisterId}`
+      : "https://identity.ic0.app/#authorize";  // fallback for production
+
+    // Trigger login
+    await authClient.login({
+      identityProvider,
+      onSuccess: async () => {
+        // Once logged in, get the identity and its principal
+        const identity = authClient.getIdentity();
+        const principal = identity.getPrincipal().toText();
+        console.log("Logged in with Principal:", principal);
+
+        // You can now pass this identity to your backend or update your app state
+        // For example, you might trigger a re-render or send the principal to your backend:
+
+        window.dispatchEvent(new CustomEvent("entryPageComplete", { detail: { principal } }));
+
+        setIsLoading(false);
+        localStorage.setItem('hasVisitedLandingPage', 'true');
+      },
+      onError: (error) => {
+        console.error("Authentication failed", error);
+        setIsLoading(false);
+      },
+    });
   };
 
+
   return (
-    <div 
+    <div
       ref={entryRef}
       className="fixed inset-0 z-50 overflow-hidden"
     >
       {/* Desktop Interactive Background - Only on screens larger than 1024px */}
       <div className="absolute inset-0 hidden lg:block">
-        <iframe 
+        <iframe
           ref={iframeRef}
-          src='https://my.spline.design/backlightbgeffect-BsrDTMwnuQ1pzHIOA1AgaXQe/' 
-          frameBorder='0' 
-          width='100%' 
+          src='https://my.spline.design/backlightbgeffect-BsrDTMwnuQ1pzHIOA1AgaXQe/'
+          frameBorder='0'
+          width='100%'
           height='100%'
           className="pointer-events-auto"
           style={{ border: 'none' }}
@@ -80,7 +108,7 @@ const InteractiveEntryPage = () => {
         <div className="glass p-8 md:p-12 max-w-md w-full text-center pointer-events-auto relative">
           {/* Gradient Background for the content div */}
           <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-purple-900/60 to-black/90 rounded-xl backdrop-blur-lg border border-purple-500/20"></div>
-          
+
           {/* Content */}
           <div className="relative z-10 space-y-6">
             {/* Logo and Text */}
@@ -96,7 +124,7 @@ const InteractiveEntryPage = () => {
             {/* Sign Up Button */}
             <div className="relative">
               {!isLoading ? (
-                <Button 
+                <Button
                   onClick={handleSignUp}
                   className="w-full py-4 text-lg font-semibold bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 glow transition-all duration-300"
                 >

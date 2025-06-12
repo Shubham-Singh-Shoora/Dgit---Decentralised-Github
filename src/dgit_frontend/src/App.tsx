@@ -8,13 +8,11 @@ import { lazy, Suspense } from "react";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
-const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/Signup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Profile = lazy(() => import("./pages/Profile"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const CreateRepository = lazy(() => import("./pages/CreateRepository"));
 const RepositoryEditor = lazy(() => import("./pages/RepositoryEditor"));
-const Profile = lazy(() => import("./pages/Profile"));
 
 const queryClient = new QueryClient();
 
@@ -34,8 +32,6 @@ const App = () => (
         }>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create" element={<CreateRepository />} />
             <Route path="/repo/:repoId/:branch" element={<RepositoryEditor />} />

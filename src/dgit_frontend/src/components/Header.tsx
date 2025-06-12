@@ -22,18 +22,17 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-background/90 backdrop-blur-md py-3 shadow-lg'
-          : 'bg-transparent py-5'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-background/90 backdrop-blur-md py-3 shadow-lg'
+        : 'bg-transparent py-5'
+        }`}
     >
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
           <GitBranch size={28} className="text-cta" />
           <span className="font-heading text-2xl font-bold purple-glow">Dgit</span>
         </div>
-        
+
         <nav className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-white/80 hover:text-white transition-colors">
             Features
@@ -48,13 +47,12 @@ const Header = () => {
             FAQ
           </a>
         </nav>
-        
+
         <div className="flex items-center gap-4">
           <Button variant="ghost" className="hidden md:inline-flex" asChild>
-            <Link to="/login">Log In</Link>
           </Button>
           <Button className="btn-primary">
-            Get Early Access
+            <Link to="/profile">Get Early Access</Link>
           </Button>
         </div>
       </div>
