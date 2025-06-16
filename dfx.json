@@ -1,8 +1,16 @@
 {
   "canisters": {
-    "dgit_backend": {
-      "main": "src/dgit_backend/main.mo",
-      "type": "motoko"
+    "user_directory": {
+      "type": "motoko",
+      "main": "src/dgit_backend/user_directory/main.mo"
+    },
+    "git_core": {
+      "type": "motoko",
+      "main": "src/dgit_backend/git_core/main.mo"
+    },
+    "user_repo": {
+      "type": "motoko",
+      "main": "src/dgit_backend/user_repo/main.mo"
     },
     "dgit_frontend": {
       "dependencies": [
@@ -29,7 +37,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",
