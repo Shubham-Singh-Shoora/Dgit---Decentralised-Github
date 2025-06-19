@@ -13,11 +13,13 @@ import IC "../shared/ic";
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
+import Cycles "mo:base/ExperimentalCycles";
 
 actor UserDirectory {
     // Stable storage for user profiles and their canister IDs
     private stable var userEntries : [(Principal, Types.UserRepoCanisterInfo)] = [];
     private var users = HashMap.HashMap<Principal, Types.UserRepoCanisterInfo>(10, Principal.equal, Principal.hash);
+    private stable var wasmChunks : [Blob] = [];
 
     // WASM module for user_repo canister
     private stable var userRepoWasm : ?Blob = null;
@@ -80,14 +82,16 @@ actor UserDirectory {
                         settings = ?settings;
                     };
 
-                    let result = await ic.create_canister(createArgs);
+                    // Add cycles before the call
+                    Cycles.add<system>(1_000_000_000_000);
+                    let result : IC.CanisterIdRecord = await ic.create_canister(createArgs);
                     let canisterId = result.canister_id;
 
                     let installArgs : IC.InstallCodeArgs = {
                         mode = #install;
                         canister_id = canisterId;
                         wasm_module = wasm;
-                        arg = Blob.fromArray([]); // or just []
+                        arg = Blob.fromArray([]);
                     };
 
                     await ic.install_code(installArgs);
@@ -204,5 +208,37 @@ actor UserDirectory {
     // Get number of registered users
     public query func get_user_count() : async Nat {
         users.size();
+    };
+
+    public shared func uploadWasmChunk(chunk : Blob) : async Nat {
+        wasmChunks := Array.append(wasmChunks, [chunk]);
+        return wasmChunks.size();
+    };
+
+    public shared func finalizeWasmUpload() : async Result.Result<(), Text> {
+        // Convert each Blob to [Nat8] and collect them
+        let byteArrays = Array.map<Blob, [Nat8]>(wasmChunks, func(blob) = Blob.toArray(blob));
+
+        // Flatten the array of byte arrays into a single byte array
+        let fullWasmBytes = Array.flatten<Nat8>(byteArrays);
+
+        // Create the final Blob from the concatenated bytes
+        let fullWasm = Blob.fromArray(fullWasmBytes);
+
+        userRepoWasm := ?fullWasm;
+        wasmChunks := []; // Clear chunks after assembly
+        #ok();
+    };
+
+    public query func getUploadedSize() : async Nat {
+        var totalSize = 0;
+        for (chunk in wasmChunks.vals()) {
+            totalSize += chunk.size();
+        };
+        totalSize;
+    };
+
+    public query func hasUserRepoWasm() : async Bool {
+        userRepoWasm != null;
     };
 };

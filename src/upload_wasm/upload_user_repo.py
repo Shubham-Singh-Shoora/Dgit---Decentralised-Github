@@ -29,7 +29,7 @@ def upload_chunks(file_path):
     subprocess.run(["dfx", "canister", "call", "user_directory", "finalizeWasmUpload", "()"])
 
 if __name__ == "__main__":
-    wasm_path = ".dfx/local/canisters/user_repo/user_repo.wasm"
+    wasm_path = "../../.dfx/local/canisters/user_repo/user_repo.wasm"
     if os.path.exists(wasm_path):
         upload_chunks(wasm_path)
     else:
