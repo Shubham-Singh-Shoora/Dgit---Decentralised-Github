@@ -133,7 +133,7 @@ actor UserDirectory {
                         };
                     };
                 } catch (e) {
-                    return #err("Failed to create user canister: " # Error.message(e));
+                    return #err("Fail to create user canister: " # Error.message(e));
                 };
             };
         };
