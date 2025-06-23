@@ -7,7 +7,8 @@ import Array "mo:base/Array";
 import Hash "mo:base/Hash";
 import Types "/Types";
 import Nat32 "mo:base/Nat32";
-
+import Iter "mo:base/Iter";
+import Nat8 "mo:base/Nat8";
 module {
     // Convert time to nanoseconds
     public func timeNow() : Int {
@@ -44,5 +45,39 @@ module {
             case (null) { default };
             case (?val) { val };
         };
+    };
+
+    // Generate username from principal (used in UserDirectory)
+    public func generateUsername(principal : Principal) : Text {
+        let principalText = Principal.toText(principal);
+        let charArr = Iter.toArray(Text.toIter(principalText));
+        let slicedIter = Array.slice(charArr, 0, 8);
+        "user" # Text.fromIter(slicedIter);
+    };
+
+    // Encode the owner principal for canister initialization
+    public func encodeInit(owner : Principal) : Blob {
+        // Simple encoding - convert principal to blob for canister init
+        Principal.toBlob(owner);
+    };
+
+    // Helper to verify WASM file header (basic validation)
+    public func isValidWasm(wasm : Blob) : Bool {
+        let bytes = Blob.toArray(wasm);
+
+        // Check minimum size
+        if (bytes.size() < 8) { return false };
+
+        // Check WASM magic number: 0x00, 0x61, 0x73, 0x6D
+        if (bytes[0] != 0x00 or bytes[1] != 0x61 or bytes[2] != 0x73 or bytes[3] != 0x6D) {
+            return false;
+        };
+
+        // Check version: 0x01, 0x00, 0x00, 0x00
+        if (bytes[4] != 0x01 or bytes[5] != 0x00 or bytes[6] != 0x00 or bytes[7] != 0x00) {
+            return false;
+        };
+
+        true;
     };
 };
