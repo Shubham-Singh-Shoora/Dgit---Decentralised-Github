@@ -30,11 +30,15 @@ module {
         wasm_module : Blob; // [Nat8] (alias)
         arg : Blob; // [Nat8] (alias)
     };
+    public type DeleteCanisterArgs = {
+        canister_id : CanisterId;
+    };
 
     /// The management canister interface
     public type IC = actor {
         create_canister : shared (CreateCanisterArgs) -> async CanisterIdRecord;
         install_code : shared (InstallCodeArgs) -> async ();
+        delete_canister : shared (DeleteCanisterArgs) -> async ();
     };
 
     /// Returns a reference to the management canister actor

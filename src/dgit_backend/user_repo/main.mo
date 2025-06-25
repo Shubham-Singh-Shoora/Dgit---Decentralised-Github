@@ -7,9 +7,9 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Result "mo:base/Result";
-import Time "mo:base/Time";
 import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
+import Error "mo:base/Error";
 
 actor class UserRepo(owner : Principal) {
   // Store user information - initialize with proper default profile
@@ -118,7 +118,7 @@ actor class UserRepo(owner : Principal) {
       Debug.print("Repository created: " # name # " for user: " # Principal.toText(owner));
       #ok(repo);
     } catch (e) {
-      #err("Failed to create repository: " # debug_show (e));
+      #err("Failed to create repository: " # Error.message(e));
     };
   };
 
@@ -238,7 +238,7 @@ actor class UserRepo(owner : Principal) {
               Debug.print("Commit created: " # commitHash # " in " # repoName # "/" # branch);
               #ok(commitHash);
             } catch (e) {
-              #err("Failed to create commit: " # debug_show (e));
+              #err("Failed to create commit: " # Error.message(e));
             };
           };
         };
