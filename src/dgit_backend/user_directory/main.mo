@@ -127,7 +127,7 @@ actor UserDirectory {
         #ok();
     };
 
-    // Enhanced canister creation with better error handling
+    // Enhanced canister creation 
     public shared (msg) func create_user_canister() : async Result.Result<Types.UserRepoCanisterInfo, Text> {
         let userPrincipal = msg.caller;
         let ic = IC.IC();
