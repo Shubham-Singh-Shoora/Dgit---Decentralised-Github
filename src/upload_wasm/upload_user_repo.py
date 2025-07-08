@@ -202,7 +202,6 @@ def main():
     parser = argparse.ArgumentParser(description="Upload WASM file to UserDirectory canister")
     parser.add_argument("canister_id", help="Canister ID")
     parser.add_argument("wasm_path", help="Path to WASM file")
-    parser.add_argument("--chunk-size", type=int, default=1024*1024, help="Chunk size in bytes")
     
     args = parser.parse_args()
     
