@@ -42,7 +42,7 @@ module {
     };
 
     public type Blob = {
-        id : Text; // SHA-1 hash
+        id : Text;
         content : Blob;
     };
 
