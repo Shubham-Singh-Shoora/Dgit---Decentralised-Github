@@ -43,7 +43,7 @@ const InteractiveEntryPage = () => {
   const handleSignUp = async () => {
     setIsLoading(true);
 
-    // Create the authentication client instance
+
     const authClient = await AuthClient.create();
 
     // Determine the identity provider URL. Use your local canister ID when testing locally.
