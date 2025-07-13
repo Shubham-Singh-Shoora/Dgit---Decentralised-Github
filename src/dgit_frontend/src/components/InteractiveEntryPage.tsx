@@ -46,7 +46,7 @@ const InteractiveEntryPage = () => {
 
     const authClient = await AuthClient.create();
 
-    // Determine the identity provider URL. Use your local canister ID when testing locally.
+
     const iiCanisterId = import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID;
     const identityProvider = iiCanisterId
       ? `http://localhost:4943/?canisterId=${iiCanisterId}`
