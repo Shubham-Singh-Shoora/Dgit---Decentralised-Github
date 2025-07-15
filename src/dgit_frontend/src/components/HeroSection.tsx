@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { GitBranch, Shield, LockOpen } from "lucide-react";
 import { useRef, useEffect } from "react";
@@ -15,7 +14,7 @@ const HeroSection = () => {
       const rect = sectionRef.current.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
-      
+
       // Send cursor position to iframe with more frequent updates
       try {
         iframeRef.current.contentWindow?.postMessage({
@@ -75,13 +74,13 @@ const HeroSection = () => {
             display: none !important;
           }
         `;
-        
+
         // Remove existing style if present
         const existingStyle = document.getElementById('spline-branding-hide');
         if (existingStyle) {
           existingStyle.remove();
         }
-        
+
         document.head.appendChild(style);
       };
 
@@ -126,12 +125,12 @@ const HeroSection = () => {
           injectHidingCSS();
           createBlockingOverlays();
         }, 100);
-        
+
         setTimeout(() => {
           injectHidingCSS();
           createBlockingOverlays();
         }, 1000);
-        
+
         setTimeout(() => {
           injectHidingCSS();
           createBlockingOverlays();
@@ -140,28 +139,28 @@ const HeroSection = () => {
     };
 
     hideSplineBranding();
-    
+
     // Reapply branding hiding periodically
     const interval = setInterval(hideSplineBranding, 2000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden"
     >
       {/* 3D Model Background - Only on tablet and larger screens */}
       <div className="absolute inset-0 hidden md:block" style={{ zIndex: 1 }}>
-        <iframe 
+        <iframe
           ref={iframeRef}
-          src='https://my.spline.design/boxeshover-bf8IdvzQsixBOcyEF37yhUSD/' 
-          frameBorder='0' 
-          width='100%' 
+          src='https://my.spline.design/boxeshover-bf8IdvzQsixBOcyEF37yhUSD/'
+          frameBorder='0'
+          width='100%'
           height='100%'
           className="pointer-events-auto"
-          style={{ 
+          style={{
             filter: 'contrast(1.1) saturate(1.2)',
             border: 'none'
           }}
@@ -173,11 +172,11 @@ const HeroSection = () => {
       {/* Original background effects for smaller screens and as fallback */}
       <div className="absolute inset-0 bg-network-pattern opacity-30 md:hidden"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-background md:hidden"></div>
-      
+
       {/* Purple glowing orbs - only on smaller screens */}
       <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-700/20 blur-3xl animate-pulse-slow md:hidden"></div>
       <div className="absolute bottom-1/4 right-1/3 w-96 h-96 rounded-full bg-purple-800/20 blur-3xl animate-pulse-slow md:hidden"></div>
-      
+
       {/* Content layer - now with pointer-events: none, except for interactive elements */}
       <div className="container mx-auto px-4 relative z-10 pointer-events-none">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
@@ -186,16 +185,16 @@ const HeroSection = () => {
               <span className="animate-pulse h-2 w-2 rounded-full bg-purple-500"></span>
               <span className="text-sm font-medium text-purple-300">Powered by Internet Computer Protocol</span>
             </div>
-            
+
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white purple-glow leading-tight">
               Your Code, <span className="text-cta">Decentralized.</span><br />
               The Future of Git.
             </h1>
-            
+
             <p className="text-lg md:text-xl text-white/80 max-w-2xl">
               Experience secure, censorship-resistant code hosting with Dgit. Leveraging the Internet Computer for true code ownership and decentralized development.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 pt-4 pointer-events-auto">
               <Button className="btn-primary relative z-20">
                 Get Early Access
@@ -204,14 +203,14 @@ const HeroSection = () => {
                 Learn More
               </Button>
             </div>
-            
+
             <div className="pt-6">
               <p className="text-sm text-white/60">
                 Trusted by <span className="font-semibold text-white">2,000+</span> early adopters
               </p>
             </div>
           </div>
-          
+
           <div className="lg:col-span-2 animate-float">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-purple-700/30 to-purple-500/20 blur-lg rounded-2xl"></div>
@@ -231,7 +230,7 @@ const HeroSection = () => {
                     <span className="text-green-400">$ </span>dgit clone myproject<br />
                     <span className="text-purple-200">Cloning into 'myproject'...</span><br />
                     <span className="text-purple-200">Verifying ICP network connection...</span><br />
-                    <span className="text-green-400">✓ </span><span className="text-purple-200">Connected to decentralized network</span><br />
+                    <span className="text-green-400">✓ </span><span className="text-purple-200">Connected to Decentralised Network II</span><br />
                     <span className="text-green-400">✓ </span><span className="text-purple-200">Repository integrity verified</span><br />
                     <span className="text-green-400">✓ </span><span className="text-purple-200">Canister ID: adk29-dka21</span><br />
                     <span className="text-purple-200">Receiving objects: 100% (1823/1823)</span><br />
