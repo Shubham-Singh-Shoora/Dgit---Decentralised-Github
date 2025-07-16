@@ -7,7 +7,7 @@ const ProblemSolutionSection = () => {
     "Repositories can be taken down or censored",
     "Limited control over your own code",
     "Vulnerable to outages and service disruptions",
-    "Subject to changing terms of service"
+
   ];
 
   const solutions = [
@@ -26,11 +26,11 @@ const ProblemSolutionSection = () => {
             <h2 className="text-3xl md:text-4xl font-heading font-bold purple-glow">
               Beyond Centralized <span className="text-cta">Limitations</span>
             </h2>
-            
+
             <p className="text-lg text-white/80">
               Traditional code hosting platforms present numerous challenges and limitations for developers who value control, privacy, and true ownership.
             </p>
-            
+
             <div className="space-y-3">
               {problems.map((problem, index) => (
                 <div key={index} className="flex items-start gap-3">
@@ -42,16 +42,16 @@ const ProblemSolutionSection = () => {
               ))}
             </div>
           </div>
-          
+
           <div className="space-y-8">
             <h2 className="text-3xl md:text-4xl font-heading font-bold purple-glow">
               The <span className="text-cta">Dgit</span> Solution
             </h2>
-            
+
             <p className="text-lg text-white/80">
               Dgit leverages the Internet Computer Protocol to provide a truly decentralized alternative that puts developers back in control.
             </p>
-            
+
             <div className="space-y-3">
               {solutions.map((solution, index) => (
                 <div key={index} className="flex items-start gap-3">
@@ -65,7 +65,7 @@ const ProblemSolutionSection = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Background elements */}
       <div className="absolute top-1/4 left-0 w-64 h-64 rounded-full bg-purple-900/20 blur-3xl animate-pulse-slow"></div>
       <div className="absolute bottom-1/4 right-0 w-96 h-96 rounded-full bg-purple-800/10 blur-3xl animate-pulse-slow"></div>
