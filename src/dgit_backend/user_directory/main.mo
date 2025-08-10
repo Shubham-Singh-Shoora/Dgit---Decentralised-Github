@@ -132,7 +132,6 @@ actor UserDirectory {
         let userPrincipal = msg.caller;
         let ic = IC.IC();
 
-        // Check if user already exists
         switch (users.get(userPrincipal)) {
             case (?userInfo) {
                 return #ok(userInfo);
